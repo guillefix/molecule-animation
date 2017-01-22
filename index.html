@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>FunMol</title>
+    <script src="3Dmol-min.js"></script>
+  </head>
+  <style>
+  .mol-container {
+  width: 700px;
+  height: 700px;
+  position: relative;
+  margin: auto;
+}
+svg {
+  width: 1500px;
+  height: 700px;
+  margin: auto;
+  position: absolute;
+  z-index:10;
+}
+#container {
+  width: 1500px;
+  height: 700px;
+  margin: auto;
+}
+  </style>
+  <body>
+    <div id="container">
+      <svg width="1500px" height="700px" viewBox="0 0 100 100">
+        <g id="scene1" class="scenes">
+          <rect x="36" y="25" width="35" height="55" style="fill: none; stroke: black; stroke-width: 0.5"/>
+          <line x1="36" y1="25" x2="5" y2="20" stroke-width="0.5" stroke="black"/>
+          <text x="1" y="18" font-size="5">A residue!</text>
+        </g>
+        <g id="scene2" class="scenes">
+          <rect x="25" y="30" width="55" height="35" style="fill: none; stroke: black; stroke-width: 0.5"/>
+          <line x1="36" y1="30" x2="5" y2="20" stroke-width="0.5" stroke="black"/>
+          <text x="1" y="18" font-size="5">Another residue!</text>
+        </g>
+        </svg>
+      <div id="container-01" class="mol-container"></div>
+    </div>
+  </body>
+  <script>
+    let element = $('#container-01');
+    let config = { backgroundColor: 'orange' };
+    let viewer = $3Dmol.createViewer( element, config );
+    let pdbUri = '/5b27.pdb';
+    let v2;
+    let instructions = [
+      {fun: "rotate", args: [90, "x", 500], time: 1200},
+      // {fun: "rotate", args: [50, "y", 1000], time: 2200},
+      {fun: "setStyle", args: [{resi: 10},{stick: {color: 'red'}}], time: 1800},
+      {fun: "setStyle", args: [{resi: 15},{stick: {color: 'red'}}], time: 1800},
+      {fun: "render", args: [], time: 1800},
+      {fun: "zoomTo", args: [{resi: 10}, 1000], time: 1800},
+      {fun: "rotate", args: [-20, "z", 300], time: 3700},
+      {fun: "rotate", args: [40, "z", 600], time: 4000},
+      {fun: "rotate", args: [-20, "z", 300], time: 4600},
+      {fun: "zoomTo", args: [{resi: 15}, 1000], time: 6000},
+      {fun: "rotate", args: [-20, "z", 300], time: 7700},
+      {fun: "rotate", args: [40, "z", 600], time: 8000},
+      {fun: "rotate", args: [-20, "z", 300], time: 8600},
+    ]
+    $(".scenes").hide()
+    setTimeout(()=>{
+      $("#scene1").show()
+    }, 3500)
+    setTimeout(()=>{
+      $("#scene1").hide()
+    }, 5500)
+    setTimeout(()=>{
+      $("#scene2").show()
+    }, 7500)
+    jQuery.ajax( pdbUri, {
+      success: function(data) {
+        let v = viewer;
+        v2 = v;
+        let m = v.addModel( data, "pdb" );                       /* load data */
+        v.setStyle({}, {cartoon: {color: 'spectrum'}});  /* style all atoms */
+        v.zoomTo();                                      /* set camera */
+        v.render();                                      /* render scene */
+        v.zoom(1.2, 1000);                               /* slight zoom */
+        v.rotate(50, "x", 1000);                                    /* render scene */
+        // v.addStyle({resn: 'PHE'},{sphere: {color: 'red'}})
+        v.render();
+        for (var i = 0; i < instructions.length; i++) {
+          let inst = instructions[i];
+          let time = inst.time;
+          setTimeout(() => {v2[inst.fun](...inst.args)}, time)
+          // time += inst.args[inst.args.length-1]+100;
+        }
+      },
+      error: function(hdr, status, err) {
+        console.error( "Failed to load PDB " + pdbUri + ": " + err );
+      },
+    });
+
+    // $(document).on("click", () => {v2.rotate(90, "x", 500)})
+  </script>
+</html>
